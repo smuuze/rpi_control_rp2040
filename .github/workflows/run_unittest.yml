@@ -24,6 +24,6 @@ jobs:
         ls
         cd rpi_control_rp2040
         ls
-        cd rpi_control_rp2040/unittest
+        cd unittest
         ls
         chmod +x make_unittest.sh
