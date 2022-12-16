@@ -303,9 +303,9 @@ void rtc_ms_tick_handler(void) {
 // --------------------------------------------------------------------------------
 
 /**
- * @see driver/rtc/rtc_interface.h#rtc_timer_usleep
+ * @see driver/rtc/rtc_interface.h#rtc_timer_delay
  */
-void rtc_timer_usleep(u32 delay_us) {
+void rtc_timer_delay(u32 delay_us) {
 
     // we only allow 31 bits, otherwise we could have a race in the loop below with
     // values very close to 2^32
