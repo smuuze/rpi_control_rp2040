@@ -13,6 +13,8 @@ jobs:
         working-directory: unittest/gpio_driver_rp2040
     steps:
     - uses: actions/checkout@v2
+      with:
+          repository: smuuze/rpi_control_frmwrk
     - name: unittest
       run: make clean all run
       
@@ -24,6 +26,8 @@ jobs:
         working-directory: unittest/irq_interface_rp2040
     steps:
     - uses: actions/checkout@v2
+      with:
+          repository: smuuze/rpi_control_frmwrk
     - name: unittest
       run: make clean all run
       
@@ -35,5 +39,7 @@ jobs:
         working-directory: unittest/uart_driver_rp2040
     steps:
     - uses: actions/checkout@v2
+      with:
+          repository: smuuze/rpi_control_frmwrk
     - name: unittest
       run: make clean all run
