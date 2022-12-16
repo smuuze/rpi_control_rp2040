@@ -5,7 +5,7 @@ on:
     branches: [ '*' ]
 
 jobs:
-  gpio_driver:
+  unittests:
     runs-on: macos-latest
     defaults:
       run:
@@ -26,4 +26,5 @@ jobs:
         ls
         cd unittest
         ls
-        chmod +x make_unittest.sh
+        chmod +x make_unittests.sh
+        ./make_unittests.sh
