@@ -15,6 +15,7 @@ jobs:
       with:
           repository: smuuze/rpi_control_frmwrk
           path: ./rpi_control_frmwrk
+          ref: 'dev'
     - uses: actions/checkout@v2
       with:
           repository: smuuze/rpi_control_rp2040
