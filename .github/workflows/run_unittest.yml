@@ -22,6 +22,8 @@ jobs:
     - name: unittest
       run: |
         ls
-        cd rpi_cotnrol_rp2040/unittest
+        cd rpi_control_frmwrk
+        ls
+        cd rpi_control_frmwrk/unittest
         ls
         chmod +x make_unittest.sh
