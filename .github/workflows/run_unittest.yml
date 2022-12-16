@@ -5,15 +5,35 @@ on:
     branches: [ '*' ]
 
 jobs:
-  unittest:
+  gpio_driver:
     runs-on: macos-latest
     defaults:
       run:
         shell: bash
-        working-directory: unittest
+        working-directory: unittest/gpio_driver_rp2040
     steps:
     - uses: actions/checkout@v2
     - name: unittest
-      run: |
-        chmod +x ${GITHUB_WORKSPACE}/unittest/make_unittest.sh
-        ${GITHUB_WORKSPACE}/unittest/make_unittest.sh
+      run: make clean all run
+      
+  irq_driver:
+    runs-on: macos-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: unittest/irq_interface_rp2040
+    steps:
+    - uses: actions/checkout@v2
+    - name: unittest
+      run: make clean all run
+      
+  uart_driver:
+    runs-on: macos-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: unittest/uart_driver_rp2040
+    steps:
+    - uses: actions/checkout@v2
+    - name: unittest
+      run: make clean all run
