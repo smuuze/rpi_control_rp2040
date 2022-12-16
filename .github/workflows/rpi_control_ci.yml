@@ -5,7 +5,7 @@ on:
     branches: [ '*' ]
 
 jobs:
-  unittests:
+  unittest:
     runs-on: macos-latest
     defaults:
       run:
@@ -22,10 +22,6 @@ jobs:
           path: ./rpi_control_rp2040
     - name: unittest
       run: |
-        ls
-        cd rpi_control_rp2040
-        ls
-        cd unittest
-        ls
+        cd rpi_control_rp2040/unittest
         chmod +x make_unittests.sh
         ./make_unittests.sh
