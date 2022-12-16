@@ -171,40 +171,6 @@ u8 time_mgmnt_istimeup_raw_u16(u16 time_reference, u16 time_interval) {
     return 0;
 }
 
-void rtc_driver_init(void) {
-
-}
-
-u8 rtc_timer_gettime_u8(void) {
-    return 0;
-}
-
-u16 rtc_timer_gettime_u16(void) {
-    return 0;
-}
-
-u32 rtc_timer_gettime_u32(void) {
-    return 0;
-}
-
-u8 rtc_timer_istimeup_u8(u8 time_reference, u8 time_interval) {
-    (void) time_reference;
-    (void) time_interval;
-    return 0;
-}
-
-u8 rtc_timer_istimeup_u16(u16 time_reference, u16 time_interval) {
-    (void) time_reference;
-    (void) time_interval;
-    return 0;
-}
-
-u8 rtc_timer_istimeup_u32(u32 time_reference, u32 time_interval) {
-    (void) time_reference;
-    (void) time_interval;
-    return 0;
-}
-
 // --------------------------------------------------------------------------------
 // PORT A
 //---------     Name,           Port,           Bit,            Pin-Cfg      FUNCTION

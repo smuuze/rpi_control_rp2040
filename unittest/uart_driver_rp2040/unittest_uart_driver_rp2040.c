@@ -354,14 +354,6 @@ u8 time_mgmnt_istimeup_raw_u16(u16 time_reference, u16 time_interval) {
     return 0;
 }
 
-void clock_driver_init(void) {
-
-}
-
-void rtc_driver_init(void) {
-    
-}
-
 u32 clock_driver_peripheral_clk_frequency(void) {
     counter_GET_CLK_FREQ += 1;
     return testcase_clock_freq;

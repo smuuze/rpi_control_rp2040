@@ -122,14 +122,6 @@ u8 time_mgmnt_istimeup_raw_u16(u16 time_reference, u16 time_interval) {
     return 0;
 }
 
-void clock_driver_init(void) {
-
-}
-
-void rtc_driver_init(void) {
-    
-}
-
 // --------------------------------------------------------------------------------
 
 // Signals / Slots
