@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [ '*' ]
+
+jobs:
+  unittest:
+    runs-on: macos-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+    - uses: actions/checkout@v2
+      with:
+          repository: smuuze/rpi_control_frmwrk
+          path: ./rpi_control_frmwrk
+          ref: 'dev'
+    - uses: actions/checkout@v2
+      with:
+          repository: smuuze/rpi_control_rp2040
+          path: ./rpi_control_rp2040
+    - name: unittest
+      run: |
+        cd rpi_control_rp2040/unittest
+        chmod +x make_unittests.sh
+        ./make_unittests.sh
