@@ -14,4 +14,4 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: unittest
-      run:  make_unittest.sh
+      run:  ./make_unittest.sh
