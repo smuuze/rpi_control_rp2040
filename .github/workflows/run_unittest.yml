@@ -20,4 +20,8 @@ jobs:
           repository: smuuze/rpi_control_rp2040
           path: ./rpi_control_rp2040
     - name: unittest
-      run: ls
+      run: |
+        ls
+        cd rpi_cotnrol_rp2040/unittest
+        ls
+        chmod +x make_unittest.sh
