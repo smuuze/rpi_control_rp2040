@@ -13,5 +13,5 @@ jobs:
         working-directory: unittest
     steps:
     - uses: actions/checkout@v2
-    - name: build unittest
-      run: ./make_unittest.sh
+    - name: unittest
+      run:  make_unittest.sh
