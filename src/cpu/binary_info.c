@@ -55,6 +55,16 @@ typedef struct __PACKED__ _binary_info_core {
  * @brief 
  * 
  */
+typedef struct __PACKED__ _binary_info_id_and_int {
+        BINARY_INFO_CORE_TYPE core;
+        u32 id;
+        const u32 value;
+} BINARY_INFO_ID_AND_INT_TYPE;
+
+/**
+ * @brief 
+ * 
+ */
 typedef struct __PACKED__ _binary_info_id_and_string {
         BINARY_INFO_CORE_TYPE core;
         u32 id;
@@ -106,9 +116,9 @@ typedef struct __PACKED__ _binary_info_id_and_string {
  * @brief Generates a bianry info variable name that contains the given line number
  * 
  */
-#define _BINARY_INFO_VAR_NAME(line)         __CONCAT(__bi, line)
-#define _BINARY_INFO_PTR_VAR_NAME(line)     __CONCAT(__bi_ptr, line)
-#define _BINARY_INFO_CHECK_VAR_NAME(line)   __CONCAT(__bi_check, line)
+#define _BINARY_INFO_VAR_NAME(line)         __CONCAT(__bi_, line)
+#define _BINARY_INFO_PTR_VAR_NAME(line)     __CONCAT(__bi_ptr_, line)
+#define _BINARY_INFO_CHECK_VAR_NAME(line)   __CONCAT(__bi_check_, line)
 
 // --------------------------------------------------------------------------------
 
@@ -127,13 +137,27 @@ typedef struct __PACKED__ _binary_info_id_and_string {
 // --------------------------------------------------------------------------------
 
 /**
- * @brief 
+ * @brief Creates a binary information string item
  * 
  */
 #define _BINARY_INFO_STR(_tag, _id, _value)                                             \
     static const BINARY_INFO_ID_AND_STR_TYPE _BINARY_INFO_VAR_NAME(__LINE__) = {        \
         .core = {                                                                       \
             .type = _BINARY_INFO_CHECK_BLOCK(BINARY_INFO_TYPE_ID_AND_STRING, __LINE__), \
+            .tag = _tag,                                                                \
+        },                                                                              \
+        .id = _id,                                                                      \
+        .value = _value,                                                                \
+    }
+
+/**
+ * @brief Creates a binary information integer item
+ * 
+ */
+#define _BINARY_INFO_INT(_tag, _id, _value)                                             \
+    static const BINARY_INFO_ID_AND_INT_TYPE _BINARY_INFO_VAR_NAME(__LINE__) = {        \
+        .core = {                                                                       \
+            .type = _BINARY_INFO_CHECK_BLOCK(BINARY_INFO_TYPE_ID_AND_INT, __LINE__),    \
             .tag = _tag,                                                                \
         },                                                                              \
         .id = _id,                                                                      \
@@ -147,19 +171,21 @@ typedef struct __PACKED__ _binary_info_id_and_string {
 
 // --------------------------------------------------------------------------------
 
-#define BINARY_INFO_BLOCK(block_definition)     _BINARY_INFO_MARK_BLOCK(__LINE__);                              \
-                                                block_definition;                                               \
-                                                __bi_decl(                                                      \
-                                                    /*ptr_name*/        _BINARY_INFO_PTR_VAR_NAME(__LINE__),    \
-                                                    /*ref_block_core*/  &_BINARY_INFO_VAR_NAME(__LINE__).core,  \
-                                                    /*section_prefix*/  ".binary_info.keep."                    \
-                                                )
+#define BINARY_INFO_BLOCK(block_definition)                                     \
+                _BINARY_INFO_MARK_BLOCK(__LINE__);                              \
+                block_definition;                                               \
+                __bi_decl(                                                      \
+                    /*ptr_name*/        _BINARY_INFO_PTR_VAR_NAME(__LINE__),    \
+                    /*ref_block_core*/  &_BINARY_INFO_VAR_NAME(__LINE__).core,  \
+                    /*section_prefix*/  ".binary_info.keep."                    \
+                )
 
 // --------------------------------------------------------------------------------
 
 /**
- * @brief 
- * 
+ * @brief Adds the given ASCII string as
+ * programm description to the resulting
+ * uf2 file
  */
 #define BINARY_INFO_PROGRAM_DESCRIPTION(program_description_str)        \
             _BINARY_INFO_STR (                                          \
@@ -168,12 +194,144 @@ typedef struct __PACKED__ _binary_info_id_and_string {
                     /*VALUE*/ program_description_str                   \
             )
 
+/**
+ * @brief Adds the given ASCII string as
+ * programm name to the resulting
+ * uf2 file
+ */
+#define BINARY_INFO_PROGRAM_NAME(program_name_str)                      \
+            _BINARY_INFO_STR (                                          \
+                    /*TAG*/   _BINARY_INFO_TAG('R', 'P'),               \
+                    /*ID*/    BINARY_INFO_ID_RP_PROGRAM_NAME,           \
+                    /*VALUE*/ program_name_str                          \
+            )
+
+/**
+ * @brief Adds the given ASCII string as
+ * programm version to the resulting
+ * uf2 file
+ */
+#define BINARY_INFO_PROGRAM_VERSION_STR(program_version_str)            \
+            _BINARY_INFO_STR (                                          \
+                    /*TAG*/   _BINARY_INFO_TAG('R', 'P'),               \
+                    /*ID*/    BINARY_INFO_ID_RP_PROGRAM_VERSION_STRING, \
+                    /*VALUE*/ program_version_str                       \
+            )
+
+/**
+ * @brief Adds the given ASCII string as
+ * programm build-date to the resulting
+ * uf2 file
+ */
+#define BINARY_INFO_PROGRAM_DATE_STR(program_date_str)                      \
+            _BINARY_INFO_STR (                                              \
+                    /*TAG*/   _BINARY_INFO_TAG('R', 'P'),                   \
+                    /*ID*/    BINARY_INFO_ID_RP_PROGRAM_BUILD_DATE_STRING,  \
+                    /*VALUE*/ program_date_str                              \
+            )
+
+/**
+ * @brief Adds the given ASCII string as
+ * programm build-attributes to the resulting
+ * uf2 file
+ */
+#define BINARY_INFO_PROGRAM_BUILD_ATTRIBUTES_STR(program_build_attr_str)    \
+            _BINARY_INFO_STR (                                              \
+                    /*TAG*/   _BINARY_INFO_TAG('R', 'P'),                   \
+                    /*ID*/    BINARY_INFO_ID_RP_PROGRAM_BUILD_ATTRIBUTE,    \
+                    /*VALUE*/ program_build_attr_str                        \
+            )
+
+/**
+ * @brief Adds the given ASCII string as
+ * programm sdk-version to the resulting
+ * uf2 file
+ */
+#define BINARY_INFO_PROGRAM_SDK_VERSION_STR(program_sdk_version_str)        \
+            _BINARY_INFO_STR (                                              \
+                    /*TAG*/   _BINARY_INFO_TAG('R', 'P'),                   \
+                    /*ID*/    BINARY_INFO_ID_RP_SDK_VERSION,                \
+                    /*VALUE*/ program_sdk_version_str                       \
+            )
+
+/**
+ * @brief Adds the given ASCII string as
+ * programm board-name-date to the resulting
+ * uf2 file
+ */
+#define BINARY_INFO_PROGRAM_BOARD_NAME_STR(program_board_name_str)          \
+            _BINARY_INFO_STR (                                              \
+                    /*TAG*/   _BINARY_INFO_TAG('R', 'P'),                   \
+                    /*ID*/    BINARY_INFO_ID_RP_PICO_BOARD,                 \
+                    /*VALUE*/ program_board_name_str                        \
+            )
+
+/**
+ * @brief Adds the given ASCII string as
+ * programm build-date to the resulting
+ * uf2 file
+ */
+#define BINARY_INFO_PROGRAM_URL_STR(program_url_str)                        \
+            _BINARY_INFO_STR (                                              \
+                    /*TAG*/   _BINARY_INFO_TAG('R', 'P'),                   \
+                    /*ID*/    BINARY_INFO_ID_RP_PROGRAM_URL,                \
+                    /*VALUE*/ program_url_str                               \
+            )
+
+/**
+ * @brief Adds the given integer value as
+ * programm binary-end information
+ * uf2 file
+ */
+#define BINARY_INFO_PROGRAM_BINARY_END(program_binary_end)                  \
+            _BINARY_INFO_INT (                                              \
+                    /*TAG*/   _BINARY_INFO_TAG('R', 'P'),                   \
+                    /*ID*/    BINARY_INFO_ID_RP_BINARY_END,                 \
+                    /*VALUE*/ program_binary_end                            \
+            )
+
 // --------------------------------------------------------------------------------
 
-#define _config_PROGRAM_DESCRIPTION "Test-Program"
+#ifdef _config_PROGRAM_NAME
+BINARY_INFO_BLOCK(BINARY_INFO_PROGRAM_NAME(_config_PROGRAM_NAME));
+#endif // _config_PROGRAM_NAME
+
+#ifdef VERSION_STR
+BINARY_INFO_BLOCK(BINARY_INFO_PROGRAM_VERSION_STR(VERSION_STR));
+#endif // VERSION_STR
+
+#ifdef _config_PROGRAM_URL
+BINARY_INFO_BLOCK(BINARY_INFO_PROGRAM_URL_STR(_config_PROGRAM_URL));
+#endif // _config_PROGRAM_URL
 
 #ifdef _config_PROGRAM_DESCRIPTION
 BINARY_INFO_BLOCK(BINARY_INFO_PROGRAM_DESCRIPTION(_config_PROGRAM_DESCRIPTION));
 #endif // _config_PROGRAM_DESCRIPTION
 
+#ifdef FRMWRK_VERSION_STR
+BINARY_INFO_BLOCK(BINARY_INFO_PROGRAM_SDK_VERSION_STR(FRMWRK_VERSION_STR));
+#endif // FRMWRK_VERSION_STR
+
+#ifdef BOARD_NAME
+BINARY_INFO_BLOCK(BINARY_INFO_PROGRAM_BOARD_NAME_STR(BOARD_NAME));
+#endif // BOARD_NAME
+
+BINARY_INFO_BLOCK(BINARY_INFO_PROGRAM_DATE_STR(__DATE__ " - " __TIME__));
+
+#ifdef TRACER_ENABLED
+BINARY_INFO_BLOCK(BINARY_INFO_PROGRAM_BUILD_ATTRIBUTES_STR("Debug"));
+#else
+BINARY_INFO_BLOCK(BINARY_INFO_PROGRAM_BUILD_ATTRIBUTES_STR("Release"));
+#endif
+
+/**
+ * @brief End address of the binary info
+ * 
+ */
+// extern unsigned int __binary_info_end;
+
+// BINARY_INFO_PROGRAM_BINARY_END(__binary_info_end);
+
 // --------------------------------------------------------------------------------
+
+
