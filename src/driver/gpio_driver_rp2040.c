@@ -42,6 +42,7 @@
 
 // --------------------------------------------------------------------------------
 
+#include "rp2040_reset.h"
 #include "driver/gpio/gpio_interface.h"
 
 // --------------------------------------------------------------------------------
@@ -511,6 +512,8 @@ static inline void gpio_driver_set_pin_pull_up_down(u8 gpio_num, u8 pull_up,u8 p
 void gpio_driver_init(void) {
 
     DEBUG_PASS("gpio_driver_init() - START");
+
+    rp2040_reset_gpio();
     
     gpio_driver_init_pin(GET_GPIO_REFERENCE(GPIO_PORT_A, GPIO_PIN_0)); // GPIO_00
     gpio_driver_init_pin(GET_GPIO_REFERENCE(GPIO_PORT_A, GPIO_PIN_1)); // GPIO_01

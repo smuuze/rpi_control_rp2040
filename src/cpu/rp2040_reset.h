@@ -48,7 +48,7 @@
 #define CPU_RESET_SUB_PIO_01        0x00000800
 #define CPU_RESET_SUB_PIO_00        0x00000400
 #define CPU_RESET_SUB_PADS_QSPI     0x00000200
-#define CPU_RESET_SUB_PDAS_BANK_00  0x00000100
+#define CPU_RESET_SUB_PADS_BANK_00  0x00000100
 #define CPU_RESET_SUB_JTAG          0x00000080
 #define CPU_RESET_SUB_IO_QSPI       0x00000040
 #define CPU_RESET_SUB_IO_BANK_00    0x00000020
@@ -213,6 +213,12 @@ static inline void rp2040_reset_pll_usb(void) {
  */
 static inline void rp2040_reset_pll_sys(void) {
     rp2040_reset_subsystem(CPU_RESET_SUB_PLL_SYS);
+}
+
+static inline void rp2040_reset_gpio(void) {
+    rp2040_reset_subsystem(CPU_RESET_SUB_IO_BANK_00);
+    rp2040_reset_subsystem(CPU_RESET_SUB_PADS_BANK_00);
+
 }
 
 // --------------------------------------------------------------------------------

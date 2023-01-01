@@ -40,7 +40,7 @@ Autor: Seabstian Lesse
 
 ### Bug Fixes:
 
-- none
+- Reset of GPIO sub-module (IOBANK0 and PADS0) on POR
 
 ### Misc:
 
