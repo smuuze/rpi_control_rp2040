@@ -255,7 +255,7 @@ typedef struct {
     /**
      * @brief GPIO output value, offset 0x010
      */
-    io_rw_32 gio_out;
+    io_rw_32 gpio_out;
 
     /**
      * @brief GPIO output value set, offset 0x014
@@ -457,7 +457,7 @@ static void gpio_driver_set_pin_level(const u8 gpio_num, GPIO_DRIVER_LEVEL pin_l
  * @return The actual physical level
  */
 static GPIO_DRIVER_LEVEL gpio_driver_get_pin_level(const u8 gpio_num) {
-    if ( (gpio_driver_get_sio_reg()->gio_out & (1U << gpio_num)) != 0U) {
+    if ( (gpio_driver_get_sio_reg()->gpio_in & (1U << gpio_num)) != 0U) {
         return GPIO_LEVEL_HIGH;
     } else {
         return GPIO_LEVEL_LOW;
