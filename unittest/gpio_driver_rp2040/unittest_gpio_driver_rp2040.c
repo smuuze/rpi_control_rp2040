@@ -101,6 +101,7 @@ typedef struct {
 static u8 counter_GET_SIO_REG = 0;
 static u8 counter_GET_IO_REG = 0;
 static u8 counter_GET_PADS_REG = 0;
+static u8 counter_RESET_GPIO = 0;
 
 /**
  * @brief Needed to compare the values written by the gpio-driver
@@ -120,6 +121,8 @@ static void unittest_reset_counter(void) {
     copy_of_gpio_out_en_set = 0;
     copy_of_gpio_out_clr = 0;
     copy_of_gpio_out_set = 0;
+
+    counter_RESET_GPIO = 0;
 }
 
 // --------------------------------------------------------------------------------
@@ -169,6 +172,10 @@ u16 time_mgmnt_gettime_u16(void) {
 
 u8 time_mgmnt_istimeup_raw_u16(u16 time_reference, u16 time_interval) {
     return 0;
+}
+
+void rp2040_reset_gpio(void) {
+    counter_RESET_GPIO += 1;
 }
 
 // --------------------------------------------------------------------------------
@@ -247,6 +254,8 @@ static void TEST_CASE_initialization(void) {
         UT_CHECK_IS_EQUAL(counter_GET_SIO_REG, 66);
         UT_CHECK_IS_EQUAL(counter_GET_IO_REG, 29);
         UT_CHECK_IS_EQUAL(counter_GET_PADS_REG, 69);
+
+        UT_CHECK_IS_EQUAL(counter_RESET_GPIO, 1);
 
         // Check Pin Function
         UT_CHECK_IS_EQUAL(ut_io_reg.gpio[0].ctrl, 2);
@@ -360,6 +369,7 @@ static void TEST_CASE_set_as_output_low(void) {
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_set, 0);
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_clr, 0);
         UT_CHECK_IS_EQUAL(ut_pad_reg.pads[0], 64);
+        UT_CHECK_IS_EQUAL(counter_RESET_GPIO, 0);
         ut_sio_reg.gpio_out_en_set = 0;
         ut_sio_reg.gpio_out_en_clr = 0;
         ut_sio_reg.gpio_out_set = 0;
@@ -371,6 +381,7 @@ static void TEST_CASE_set_as_output_low(void) {
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_set, 0);
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_clr, 0);
         UT_CHECK_IS_EQUAL(ut_pad_reg.pads[1], 64);
+        UT_CHECK_IS_EQUAL(counter_RESET_GPIO, 0);
         ut_sio_reg.gpio_out_en_set = 0;
         ut_sio_reg.gpio_out_en_clr = 0;
         ut_sio_reg.gpio_out_set = 0;
@@ -382,6 +393,7 @@ static void TEST_CASE_set_as_output_low(void) {
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_clr, (1 << 2));
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_set, 0);
         UT_CHECK_IS_EQUAL(ut_pad_reg.pads[2], 64);
+        UT_CHECK_IS_EQUAL(counter_RESET_GPIO, 0);
         ut_sio_reg.gpio_out_en_set = 0;
         ut_sio_reg.gpio_out_en_clr = 0;
         ut_sio_reg.gpio_out_set = 0;
@@ -393,6 +405,7 @@ static void TEST_CASE_set_as_output_low(void) {
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_clr, (1 << 3));
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_set, 0);
         UT_CHECK_IS_EQUAL(ut_pad_reg.pads[3], 64);
+        UT_CHECK_IS_EQUAL(counter_RESET_GPIO, 0);
         ut_sio_reg.gpio_out_en_set = 0;
         ut_sio_reg.gpio_out_en_clr = 0;
         ut_sio_reg.gpio_out_set = 0;
@@ -404,6 +417,7 @@ static void TEST_CASE_set_as_output_low(void) {
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_clr, (1 << 4));
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_set, 0);
         UT_CHECK_IS_EQUAL(ut_pad_reg.pads[4], 64);
+        UT_CHECK_IS_EQUAL(counter_RESET_GPIO, 0);
         ut_sio_reg.gpio_out_en_set = 0;
         ut_sio_reg.gpio_out_en_clr = 0;
         ut_sio_reg.gpio_out_set = 0;
@@ -415,6 +429,7 @@ static void TEST_CASE_set_as_output_low(void) {
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_clr, (1 << 5));
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_set, 0);
         UT_CHECK_IS_EQUAL(ut_pad_reg.pads[5], 64);
+        UT_CHECK_IS_EQUAL(counter_RESET_GPIO, 0);
         ut_sio_reg.gpio_out_en_set = 0;
         ut_sio_reg.gpio_out_en_clr = 0;
         ut_sio_reg.gpio_out_set = 0;
@@ -426,6 +441,7 @@ static void TEST_CASE_set_as_output_low(void) {
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_clr, (1 << 6));
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_set, 0);
         UT_CHECK_IS_EQUAL(ut_pad_reg.pads[6], 64);
+        UT_CHECK_IS_EQUAL(counter_RESET_GPIO, 0);
         ut_sio_reg.gpio_out_en_set = 0;
         ut_sio_reg.gpio_out_en_clr = 0;
         ut_sio_reg.gpio_out_set = 0;
@@ -437,6 +453,7 @@ static void TEST_CASE_set_as_output_low(void) {
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_clr, (1 << 7));
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_set, 0);
         UT_CHECK_IS_EQUAL(ut_pad_reg.pads[7], 64);
+        UT_CHECK_IS_EQUAL(counter_RESET_GPIO, 0);
         ut_sio_reg.gpio_out_en_set = 0;
         ut_sio_reg.gpio_out_en_clr = 0;
         ut_sio_reg.gpio_out_set = 0;
@@ -448,6 +465,7 @@ static void TEST_CASE_set_as_output_low(void) {
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_clr, (1 << 8));
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_set, 0);
         UT_CHECK_IS_EQUAL(ut_pad_reg.pads[8], 64);
+        UT_CHECK_IS_EQUAL(counter_RESET_GPIO, 0);
         ut_sio_reg.gpio_out_en_set = 0;
         ut_sio_reg.gpio_out_en_clr = 0;
         ut_sio_reg.gpio_out_set = 0;
@@ -459,6 +477,7 @@ static void TEST_CASE_set_as_output_low(void) {
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_clr, (1 << 9));
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_set, 0);
         UT_CHECK_IS_EQUAL(ut_pad_reg.pads[9], 64);
+        UT_CHECK_IS_EQUAL(counter_RESET_GPIO, 0);
         ut_sio_reg.gpio_out_en_set = 0;
         ut_sio_reg.gpio_out_en_clr = 0;
         ut_sio_reg.gpio_out_set = 0;
@@ -470,6 +489,7 @@ static void TEST_CASE_set_as_output_low(void) {
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_clr, (1 << 10));
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_set, 0);
         UT_CHECK_IS_EQUAL(ut_pad_reg.pads[10], 64);
+        UT_CHECK_IS_EQUAL(counter_RESET_GPIO, 0);
         ut_sio_reg.gpio_out_en_set = 0;
         ut_sio_reg.gpio_out_en_clr = 0;
         ut_sio_reg.gpio_out_set = 0;
@@ -481,6 +501,7 @@ static void TEST_CASE_set_as_output_low(void) {
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_clr, (1 << 11));
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_set, 0);
         UT_CHECK_IS_EQUAL(ut_pad_reg.pads[11], 64);
+        UT_CHECK_IS_EQUAL(counter_RESET_GPIO, 0);
         ut_sio_reg.gpio_out_en_set = 0;
         ut_sio_reg.gpio_out_en_clr = 0;
         ut_sio_reg.gpio_out_set = 0;
@@ -492,6 +513,7 @@ static void TEST_CASE_set_as_output_low(void) {
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_clr, (1 << 12));
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_set, 0);
         UT_CHECK_IS_EQUAL(ut_pad_reg.pads[12], 64);
+        UT_CHECK_IS_EQUAL(counter_RESET_GPIO, 0);
         ut_sio_reg.gpio_out_en_set = 0;
         ut_sio_reg.gpio_out_en_clr = 0;
         ut_sio_reg.gpio_out_set = 0;
@@ -503,6 +525,7 @@ static void TEST_CASE_set_as_output_low(void) {
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_clr, (1 << 13));
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_set, 0);
         UT_CHECK_IS_EQUAL(ut_pad_reg.pads[13], 64);
+        UT_CHECK_IS_EQUAL(counter_RESET_GPIO, 0);
         ut_sio_reg.gpio_out_en_set = 0;
         ut_sio_reg.gpio_out_en_clr = 0;
         ut_sio_reg.gpio_out_set = 0;
@@ -514,6 +537,7 @@ static void TEST_CASE_set_as_output_low(void) {
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_clr, (1 << 14));
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_set, 0);
         UT_CHECK_IS_EQUAL(ut_pad_reg.pads[14], 64);
+        UT_CHECK_IS_EQUAL(counter_RESET_GPIO, 0);
         ut_sio_reg.gpio_out_en_set = 0;
         ut_sio_reg.gpio_out_en_clr = 0;
         ut_sio_reg.gpio_out_set = 0;
@@ -525,6 +549,7 @@ static void TEST_CASE_set_as_output_low(void) {
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_clr, (1 << 15));
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_set, 0);
         UT_CHECK_IS_EQUAL(ut_pad_reg.pads[15], 64);
+        UT_CHECK_IS_EQUAL(counter_RESET_GPIO, 0);
         ut_sio_reg.gpio_out_en_set = 0;
         ut_sio_reg.gpio_out_en_clr = 0;
         ut_sio_reg.gpio_out_set = 0;
@@ -536,6 +561,7 @@ static void TEST_CASE_set_as_output_low(void) {
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_clr, (1 << 16));
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_set, 0);
         UT_CHECK_IS_EQUAL(ut_pad_reg.pads[16], 64);
+        UT_CHECK_IS_EQUAL(counter_RESET_GPIO, 0);
         ut_sio_reg.gpio_out_en_set = 0;
         ut_sio_reg.gpio_out_en_clr = 0;
         ut_sio_reg.gpio_out_set = 0;
@@ -547,6 +573,7 @@ static void TEST_CASE_set_as_output_low(void) {
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_clr, 0);
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_set, 0);
         UT_CHECK_IS_EQUAL(ut_pad_reg.pads[17], 64);
+        UT_CHECK_IS_EQUAL(counter_RESET_GPIO, 0);
         ut_sio_reg.gpio_out_en_set = 0;
         ut_sio_reg.gpio_out_en_clr = 0;
         ut_sio_reg.gpio_out_set = 0;
@@ -558,6 +585,7 @@ static void TEST_CASE_set_as_output_low(void) {
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_clr, 0);
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_set, 0);
         UT_CHECK_IS_EQUAL(ut_pad_reg.pads[18], 64);
+        UT_CHECK_IS_EQUAL(counter_RESET_GPIO, 0);
         ut_sio_reg.gpio_out_en_set = 0;
         ut_sio_reg.gpio_out_en_clr = 0;
         ut_sio_reg.gpio_out_set = 0;
@@ -569,6 +597,7 @@ static void TEST_CASE_set_as_output_low(void) {
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_clr, 0);
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_set, 0);
         UT_CHECK_IS_EQUAL(ut_pad_reg.pads[19], 64);
+        UT_CHECK_IS_EQUAL(counter_RESET_GPIO, 0);
         ut_sio_reg.gpio_out_en_set = 0;
         ut_sio_reg.gpio_out_en_clr = 0;
         ut_sio_reg.gpio_out_set = 0;
@@ -580,6 +609,7 @@ static void TEST_CASE_set_as_output_low(void) {
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_clr, 0);
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_set, 0);
         UT_CHECK_IS_EQUAL(ut_pad_reg.pads[20], 64);
+        UT_CHECK_IS_EQUAL(counter_RESET_GPIO, 0);
         ut_sio_reg.gpio_out_en_set = 0;
         ut_sio_reg.gpio_out_en_clr = 0;
         ut_sio_reg.gpio_out_set = 0;
@@ -591,6 +621,7 @@ static void TEST_CASE_set_as_output_low(void) {
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_clr, 0);
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_set, 0);
         UT_CHECK_IS_EQUAL(ut_pad_reg.pads[21], 64);
+        UT_CHECK_IS_EQUAL(counter_RESET_GPIO, 0);
         ut_sio_reg.gpio_out_en_set = 0;
         ut_sio_reg.gpio_out_en_clr = 0;
         ut_sio_reg.gpio_out_set = 0;
@@ -602,6 +633,7 @@ static void TEST_CASE_set_as_output_low(void) {
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_clr, 0);
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_set, 0);
         UT_CHECK_IS_EQUAL(ut_pad_reg.pads[22], 64);
+        UT_CHECK_IS_EQUAL(counter_RESET_GPIO, 0);
         ut_sio_reg.gpio_out_en_set = 0;
         ut_sio_reg.gpio_out_en_clr = 0;
         ut_sio_reg.gpio_out_set = 0;
@@ -613,6 +645,7 @@ static void TEST_CASE_set_as_output_low(void) {
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_clr, 0);
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_set, 0);
         UT_CHECK_IS_EQUAL(ut_pad_reg.pads[23], 64);
+        UT_CHECK_IS_EQUAL(counter_RESET_GPIO, 0);
         ut_sio_reg.gpio_out_en_set = 0;
         ut_sio_reg.gpio_out_en_clr = 0;
         ut_sio_reg.gpio_out_set = 0;
@@ -624,6 +657,7 @@ static void TEST_CASE_set_as_output_low(void) {
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_clr, (1 << 24));
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_set, 0);
         UT_CHECK_IS_EQUAL(ut_pad_reg.pads[24], 64);
+        UT_CHECK_IS_EQUAL(counter_RESET_GPIO, 0);
         ut_sio_reg.gpio_out_en_set = 0;
         ut_sio_reg.gpio_out_en_clr = 0;
         ut_sio_reg.gpio_out_set = 0;
@@ -635,6 +669,7 @@ static void TEST_CASE_set_as_output_low(void) {
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_clr, (1 << 25));
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_set, 0);
         UT_CHECK_IS_EQUAL(ut_pad_reg.pads[25], 64);
+        UT_CHECK_IS_EQUAL(counter_RESET_GPIO, 0);
         ut_sio_reg.gpio_out_en_set = 0;
         ut_sio_reg.gpio_out_en_clr = 0;
         ut_sio_reg.gpio_out_set = 0;
@@ -646,6 +681,7 @@ static void TEST_CASE_set_as_output_low(void) {
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_clr, (1 << 26));
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_set, 0);
         UT_CHECK_IS_EQUAL(ut_pad_reg.pads[26], 64);
+        UT_CHECK_IS_EQUAL(counter_RESET_GPIO, 0);
         ut_sio_reg.gpio_out_en_set = 0;
         ut_sio_reg.gpio_out_en_clr = 0;
         ut_sio_reg.gpio_out_set = 0;
@@ -657,6 +693,7 @@ static void TEST_CASE_set_as_output_low(void) {
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_clr, (1 << 27));
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_set, 0);
         UT_CHECK_IS_EQUAL(ut_pad_reg.pads[27], 64);
+        UT_CHECK_IS_EQUAL(counter_RESET_GPIO, 0);
         ut_sio_reg.gpio_out_en_set = 0;
         ut_sio_reg.gpio_out_en_clr = 0;
         ut_sio_reg.gpio_out_set = 0;
@@ -668,6 +705,7 @@ static void TEST_CASE_set_as_output_low(void) {
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_clr, (1 << 28));
         UT_CHECK_IS_EQUAL(ut_sio_reg.gpio_out_set, 0);
         UT_CHECK_IS_EQUAL(ut_pad_reg.pads[28], 64);
+        UT_CHECK_IS_EQUAL(counter_RESET_GPIO, 0);
         ut_sio_reg.gpio_out_en_set = 0;
         ut_sio_reg.gpio_out_en_clr = 0;
         ut_sio_reg.gpio_out_set = 0;
