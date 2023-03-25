@@ -125,6 +125,16 @@
  */
 #define RP2040_TIMER_REG_ADDRESS __UNSIGNED(0x40054000)
 
+/**
+ * @brief Base address of the SPI0 register of the RP2040 mcu
+ */
+#define RP2040_SPI0_REG_BASE_ADDRESS __UNSIGNED(0x4003c000)
+
+/**
+ * @brief Base address of the SPI1 register of the RP2040 mcu
+ */
+#define RP2040_SPI1_REG_BASE_ADDRESS __UNSIGNED(0x40040000)
+
 // --------------------------------------------------------------------------------
 
 /**
@@ -164,6 +174,8 @@
 
 #define IRQ_NUM_TIMER0                      __UNSIGNED(0)
 #define IRQ_NUM_UART0                       __UNSIGNED(20)
+#define IRQ_NUM_SPI0                        __UNSIGNED(18)
+#define IRQ_NUM_SPI1                        __UNSIGNED(19)
 
 // --------------------------------------------------------------------------------
 

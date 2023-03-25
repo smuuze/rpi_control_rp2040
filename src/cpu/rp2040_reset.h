@@ -192,8 +192,8 @@ void rp2040_reset_subsystem(u32 sub_system_bits);
 // --------------------------------------------------------------------------------
 
 /**
- * @brief Resets the UART0 sub-system and waits until reset is finisehd.
- * 
+ * @brief Resets the UART0 subsystem of the RP2040 mcu.
+ * This function blocks until the reset has finished
  */
 static inline void rp2040_reset_uart0(void) {
     rp2040_reset_subsystem(CPU_RESET_SUB_UART_00);
@@ -208,17 +208,28 @@ static inline void rp2040_reset_pll_usb(void) {
 }
 
 /**
- * @brief Resets the SYS-PLL sub-system and waits until reset is finisehd.
- * 
+ * @brief Resets the SYS-PLL subsystem of the RP2040 mcu.
+ * This function blocks until the reset has finished
  */
 static inline void rp2040_reset_pll_sys(void) {
     rp2040_reset_subsystem(CPU_RESET_SUB_PLL_SYS);
 }
 
+/**
+ * @brief Resets the GPIO subsystem of the RP2040 mcu.
+ * This function blocks until the reset has finished
+ */
 static inline void rp2040_reset_gpio(void) {
     rp2040_reset_subsystem(CPU_RESET_SUB_IO_BANK_00);
     rp2040_reset_subsystem(CPU_RESET_SUB_PADS_BANK_00);
+}
 
+/**
+ * @brief Resets the SPI0 subsystem of the RP2040 mcu.
+ * This function blocks until the reset has finished
+ */
+static inline void rp2040_reset_spi0(void) {
+    rp2040_reset_subsystem(CPU_RESET_SUB_SPI_00);
 }
 
 // --------------------------------------------------------------------------------
