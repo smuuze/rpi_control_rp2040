@@ -49,6 +49,7 @@
 #include "driver/irq/irq_interface.h"
 #include "driver/cfg_driver_interface.h"
 #include "common/local_msg_buffer.h"
+#include "driver/communication/spi/spi0_driver.h"
 
 // --------------------------------------------------------------------------------
 
@@ -365,6 +366,60 @@ static void spi_driver_configure(
 // --------------------------------------------------------------------------------
 
 /**
+ * @brief Prepares the spi instance to transmit the bytes given by p_buffer_from.
+ * It is not guaranteet that all bytes are copied into the spi-instance.
+ * First as much as possible bytes are transefered into the hw-fifo of the spi-instance,
+ * then as much as pssible of the remaining bytes are stored into the sw-fifo of that instance.
+ * 
+ * @param p_spi spi-instance to use
+ * @param p_msg_buffer sw-buffer where to store bytes that does not fit into the hw-buffer
+ * @param num_bytes number of bytes of p_buffer_from
+ * @param p_buffer_from the byte-array where to read from
+ * @return The number of bytes that have been stored into the hw-/sw-fifo.
+ */
+static inline u8 spi_driver_add_bytes(
+    RP2040_SPI_REG* p_spi,
+    const LOCAL_MSG_BUFFER_CLASS* p_msg_buffer,
+    const u16 num_bytes,
+    const u8* p_buffer_from
+) {
+
+    DEBUG_TRACE_word(num_bytes, "spi_driver_add_bytes() - NUM-BYTES");
+    DEBUG_TRACE_N(num_bytes, p_buffer_from, "spi_driver_add_bytes()");
+
+    u16 bytes_written = 0;
+    
+    while (spi_driver_is_ready_for_tx(p_spi) != 0) {
+
+        p_spi->SSPDR = p_buffer_from[bytes_written];
+        bytes_written += 1;
+
+        #ifdef UNITTEST_SET_FIFO_DATA_CALLBACK
+        {
+            UNITTEST_SET_FIFO_DATA_CALLBACK
+        }
+        #endif
+
+        if (bytes_written == num_bytes) {
+            break;
+        }
+    }
+
+    DEBUG_TRACE_word(bytes_written, "spi_driver_add_bytes() - NUM-BYTES HW-FIFO:");
+
+    u16 bytes_left = num_bytes - bytes_written;
+    if (bytes_left) {
+        p_msg_buffer->start_write();
+        bytes_written += p_msg_buffer->add_n_bytes(bytes_left, &p_buffer_from[bytes_written]);
+        p_msg_buffer->stop_write();
+    }
+
+    return bytes_written;
+}
+
+// --------------------------------------------------------------------------------
+
+/**
  * @see frmwrk/spi0_driver.h#spi0_driver_initialize
  */
 void spi0_driver_initialize(void) {
@@ -414,11 +469,13 @@ u16 spi0_driver_get_N_bytes(u16 num_bytes, u8* p_buffer_to) {
  * @see frmwrk/spi0_driver.h#spi0_driver_set_N_bytes
  */
 u16 spi0_driver_set_N_bytes(u16 num_bytes, const u8* p_buffer_from) {
-    
-    // u16 bytes_written = spi_driver_add_bytes_to_fifo (
-    //     get_spi0_reg()
-    // );
-    return 0;
+    DEBUG_PASS("spi0_driver_set_N_bytes()");
+    return spi_driver_add_bytes(
+        get_spi0_reg(),
+        SPI0_TX_BUFFER_get_class(),
+        num_bytes,
+        p_buffer_from
+    );
 }
 
 /**

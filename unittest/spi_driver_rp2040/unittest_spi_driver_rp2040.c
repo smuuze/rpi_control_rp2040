@@ -59,6 +59,7 @@ UT_ACTIVATE()
 
 #define TEST_CASE_ID_INITIALIZATION                     0
 #define TEST_CASE_ID_CONFIGURATION_01                   1
+#define TEST_CASE_ID_ADD_BYTES_TO_FIFO_01               2
 
 // --------------------------------------------------------------------------------
 
@@ -153,6 +154,18 @@ typedef struct {
 
 // --------------------------------------------------------------------------------
 
+RP2040_SPI_REG ut_spi0_reg;
+RP2040_SPI_REG ut_spi1_reg;
+
+// --------------------------------------------------------------------------------
+
+/**
+ * @brief The buffer where to store fifo bytes into.
+ */
+static u8 spi_tx_fifo_bufer[32];
+
+// --------------------------------------------------------------------------------
+
 static u8 counter_RESET_RP2040 = 0;
 static u8 counter_GET_SPI0_REG = 0;
 static u8 counter_GET_SPI1_REG = 0;
@@ -168,6 +181,8 @@ static u8 counter_ADD_IRQ_HANDLER_SPI1      = 0;
 static u8 counter_ENABLE_IRQ_HANDLER        = 0;
 static u8 counter_ENABLE_IRQ_HANDLER_SPI0   = 0;
 static u8 counter_ENABLE_IRQ_HANDLER_SPI1   = 0;
+
+static u8 counter_SET_FIFO_DATA = 0;
 
 static void unittest_reset_counter(void) {
 
@@ -188,6 +203,50 @@ static void unittest_reset_counter(void) {
     counter_ADD_IRQ_HANDLER         = 0;
     counter_ADD_IRQ_HANDLER_SPI0    = 0;
     counter_ADD_IRQ_HANDLER_SPI1    = 0;
+
+    counter_SET_FIFO_DATA = 0;
+
+    memset(&ut_spi0_reg, 0, sizeof(ut_spi0_reg));
+    memset(&ut_spi1_reg, 0, sizeof(ut_spi1_reg));
+
+    memset(spi_tx_fifo_bufer, 0x00, sizeof(spi_tx_fifo_bufer));
+}
+
+// --------------------------------------------------------------------------------
+
+void* ut_get_RP2040_SPI0_REG_BASE_ADDRESS(void) {
+    counter_GET_SPI0_REG += 1;
+    return (void*)&ut_spi0_reg;
+}
+
+void* ut_get_RP2040_SPI1_REG_BASE_ADDRESS(void) {
+    counter_GET_SPI1_REG += 1;
+    return (void*)&ut_spi1_reg;
+}
+
+// --------------------------------------------------------------------------------
+
+/**
+ * @brief Is called via the macro UNITTEST_SET_FIFO_DATA_CALLBACK from the spi-driver
+ * @see config.h#UNITTEST_SET_FIFO_DATA_CALLBACK
+ */
+void ut_set_fifo_data_callback(void) {
+
+        DEBUG_PASS("ut_set_fifo_data_callback() - TEST_CASE_ID_ADD_BYTES_TO_FIFO_01");
+
+    if (UT_GET_TEST_CASE_ID() == TEST_CASE_ID_ADD_BYTES_TO_FIFO_01) {
+
+        if (counter_SET_FIFO_DATA < sizeof(spi_tx_fifo_bufer)) {
+            spi_tx_fifo_bufer[counter_SET_FIFO_DATA] = ut_spi0_reg.SSPDR;
+            ut_spi0_reg.SSPDR = 0;
+        }
+        
+        if (counter_SET_FIFO_DATA >= sizeof(spi_tx_fifo_bufer)) {
+            ut_spi0_reg.SSPCPSR = 0; // transmit-fifo is full
+        }
+    }
+
+    counter_SET_FIFO_DATA += 1;
 }
 
 // --------------------------------------------------------------------------------
@@ -223,21 +282,6 @@ void rp2040_reset_spi0(void) {
 void rp2040_reset_spi1(void) {
     DEBUG_PASS("UT - rp2040_reset_spi1()");
     counter_RESET_RP2040 += 1;
-}
-
-// --------------------------------------------------------------------------------
-
-RP2040_SPI_REG ut_spi0_reg;
-RP2040_SPI_REG ut_spi1_reg;
-
-void* ut_get_RP2040_SPI0_REG_BASE_ADDRESS(void) {
-    counter_GET_SPI0_REG += 1;
-    return (void*)&ut_spi0_reg;
-}
-
-void* ut_get_RP2040_SPI1_REG_BASE_ADDRESS(void) {
-    counter_GET_SPI1_REG += 1;
-    return (void*)&ut_spi1_reg;
 }
 
 // --------------------------------------------------------------------------------
@@ -367,6 +411,8 @@ static void TEST_CASE_initialization(void) {
         UT_CHECK_IS_EQUAL(counter_ENABLE_IRQ_HANDLER,      0);
         UT_CHECK_IS_EQUAL(counter_ENABLE_IRQ_HANDLER_SPI0, 0);
         UT_CHECK_IS_EQUAL(counter_ENABLE_IRQ_HANDLER_SPI1, 0);
+
+        UT_CHECK_IS_EQUAL(counter_SET_FIFO_DATA, 0);
     }
     UT_END_TEST_CASE()
 }
@@ -409,7 +455,7 @@ static void TEST_CASE_configuration_01(void) {
         spi0_driver_configure(&configuration_01);
         
         UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPCPSR, 8); // clock-prescaler = 8
-        UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPCR0, 7); // data-size 8 bit
+        UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPCR0, 135); // data-size 8 bit | SPH
         UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPCR1, 2); // is enabled as master
 
         configuration_01.module.spi.data_order = 0;
@@ -419,8 +465,8 @@ static void TEST_CASE_configuration_01(void) {
 
         spi0_driver_configure(&configuration_01);
         
-        UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPCPSR, 8); // clock-prescaler = 8
-        UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPCR0, 7); // data-size 8 bit
+        UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPCPSR, 16); // clock-prescaler = 8
+        UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPCR0, 71); // data-size 8 bit | SPO
         UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPCR1, 2); // is enabled as master
 
         configuration_01.module.spi.data_order = 0;
@@ -430,8 +476,8 @@ static void TEST_CASE_configuration_01(void) {
 
         spi0_driver_configure(&configuration_01);
         
-        UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPCPSR, 8); // clock-prescaler = 8
-        UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPCR0, 7); // data-size 8 bit
+        UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPCPSR, 32); // clock-prescaler = 8
+        UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPCR0, 199); // data-size 8 bit | SPH | SPO
         UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPCR1, 2); // is enabled as master
 
         configuration_01.module.spi.data_order = 0;
@@ -441,9 +487,9 @@ static void TEST_CASE_configuration_01(void) {
 
         spi0_driver_configure(&configuration_01);
         
-        UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPCPSR, 8); // clock-prescaler = 8
-        UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPCR0, 7); // data-size 8 bit
-        UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPCR1, 2); // is enabled as master
+        UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPCPSR, 64); // clock-prescaler = 8
+        UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPCR0, 199); // data-size 8 bit | SPH | SPO
+        UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPCR1, 6); // is enabled as slave
 
         // ---
         UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPDMACR, 0);
@@ -456,7 +502,7 @@ static void TEST_CASE_configuration_01(void) {
 
         UT_CHECK_IS_EQUAL(counter_RESET_RP2040, 0);
 
-        UT_CHECK_IS_EQUAL(counter_GET_SPI0_REG, 1);
+        UT_CHECK_IS_EQUAL(counter_GET_SPI0_REG, 5); // changed configuration for 5 times
         UT_CHECK_IS_EQUAL(counter_GET_SPI1_REG, 0);
         
         UT_CHECK_IS_EQUAL(ut_spi1_reg.SSPCPSR, 0);
@@ -481,6 +527,84 @@ static void TEST_CASE_configuration_01(void) {
         UT_CHECK_IS_EQUAL(counter_ENABLE_IRQ_HANDLER,      5);
         UT_CHECK_IS_EQUAL(counter_ENABLE_IRQ_HANDLER_SPI0, 5);
         UT_CHECK_IS_EQUAL(counter_ENABLE_IRQ_HANDLER_SPI1, 0);
+        
+        UT_CHECK_IS_EQUAL(counter_SET_FIFO_DATA, 0);
+    }
+    UT_END_TEST_CASE()
+}
+
+// --------------------------------------------------------------------------------
+
+/**
+ * @brief Expectations:
+ * The SPI-peripheral is reseted
+ */
+static void TEST_CASE_add_bytes_to_fifo_01(void) {
+
+    UT_START_TEST_CASE("Add Bytes to Fifo 01")
+    {
+        UT_SET_TEST_CASE_ID(TEST_CASE_ID_ADD_BYTES_TO_FIFO_01);
+        unittest_reset_counter();
+
+        u8 buffer[4] = {
+            0x11, 0x22,0x33,0x44
+        };
+
+         // transmit fifo is not full
+        ut_spi0_reg.SSPCPSR |= 0x00000002;
+
+        u16 num_bytes_written = spi0_driver_set_N_bytes(
+            sizeof(buffer),
+            buffer
+        );
+
+        UT_CHECK_IS_EQUAL(num_bytes_written, 4);
+
+        UT_CHECK_IS_EQUAL(counter_RESET_RP2040, 0);
+
+        UT_CHECK_IS_EQUAL(counter_GET_SPI0_REG, 1);
+        UT_CHECK_IS_EQUAL(counter_GET_SPI1_REG, 0);
+        
+        UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPCPSR, 0x00000002); // fifo is not full
+        UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPCR0, 0);
+        UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPCR1, 0);
+        UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPDMACR, 0);
+        UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPDR, 0);
+        UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPICR, 0);
+        UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPIMSC, 0);
+        UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPMIS, 0);
+        UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPRIS, 0);
+        UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPSR, 0);
+        
+        UT_CHECK_IS_EQUAL(ut_spi1_reg.SSPCPSR, 0);
+        UT_CHECK_IS_EQUAL(ut_spi1_reg.SSPCR0, 0);
+        UT_CHECK_IS_EQUAL(ut_spi1_reg.SSPCR1, 0);
+        UT_CHECK_IS_EQUAL(ut_spi1_reg.SSPDMACR, 0);
+        UT_CHECK_IS_EQUAL(ut_spi1_reg.SSPDR, 0);
+        UT_CHECK_IS_EQUAL(ut_spi1_reg.SSPICR, 0);
+        UT_CHECK_IS_EQUAL(ut_spi1_reg.SSPIMSC, 0);
+        UT_CHECK_IS_EQUAL(ut_spi1_reg.SSPMIS, 0);
+        UT_CHECK_IS_EQUAL(ut_spi1_reg.SSPRIS, 0);
+        UT_CHECK_IS_EQUAL(ut_spi1_reg.SSPSR, 0);
+
+        UT_CHECK_IS_EQUAL(counter_ENABLE_IRQ,      0);
+        UT_CHECK_IS_EQUAL(counter_ENABLE_IRQ_SPI0, 0);
+        UT_CHECK_IS_EQUAL(counter_ENABLE_IRQ_SPI1, 0);
+
+        UT_CHECK_IS_EQUAL(counter_ADD_IRQ_HANDLER,         0);
+        UT_CHECK_IS_EQUAL(counter_ADD_IRQ_HANDLER_SPI0,    0);
+        UT_CHECK_IS_EQUAL(counter_ADD_IRQ_HANDLER_SPI1,    0);
+
+        UT_CHECK_IS_EQUAL(counter_ENABLE_IRQ_HANDLER,      0);
+        UT_CHECK_IS_EQUAL(counter_ENABLE_IRQ_HANDLER_SPI0, 0);
+        UT_CHECK_IS_EQUAL(counter_ENABLE_IRQ_HANDLER_SPI1, 0);
+
+        UT_CHECK_IS_EQUAL(counter_SET_FIFO_DATA, 4);
+
+        UT_CHECK_IS_EQUAL(spi_tx_fifo_bufer[0], 0x11);
+        UT_CHECK_IS_EQUAL(spi_tx_fifo_bufer[1], 0x22);
+        UT_CHECK_IS_EQUAL(spi_tx_fifo_bufer[2], 0x33);
+        UT_CHECK_IS_EQUAL(spi_tx_fifo_bufer[3], 0x44);
     }
     UT_END_TEST_CASE()
 }
@@ -499,6 +623,7 @@ int main(void) {
     {
         TEST_CASE_initialization();
         TEST_CASE_configuration_01();
+        TEST_CASE_add_bytes_to_fifo_01();
     }
     UT_END_TESTBENCH()
 
