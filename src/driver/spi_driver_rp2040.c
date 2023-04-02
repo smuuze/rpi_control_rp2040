@@ -246,19 +246,42 @@ static inline RP2040_SPI_REG* get_spi1_reg(void) {
 // --------------------------------------------------------------------------------
 
 /**
- * @brief 
+ * @brief Checks if the transmit fifo of the given spi-instance can
+ * accept one more data byte.
  * 
- * @param p_spi 
- * @return u8 
+ * @param p_spi spi-instance to check for
+ * @return 0 if the transmit fifo of p_spi is full,
+ * otherwise a value unequel to zero
  */
 static inline u8 spi_driver_is_ready_for_tx(RP2040_SPI_REG* p_spi) {
     return (p_spi->SSPCPSR & SPI_DRIVER_SSPSR_TNF);
+}
+
+/**
+ * @brief Enables the given spi-instance.
+ * After the spi has been enabled it can transfer data.
+ * 
+ * @param p_spi spi-instance to enable
+ */
+static inline void spi_driver_enable(RP2040_SPI_REG* p_spi) {
+    p_spi->SSPCR1 |= SPI_DRIVER_SSPCR1_ENABLE;
+}
+
+/**
+ * @brief Checks if the given spi-instance is enabled (ready to transmit data)
+ * 
+ * @param p_spi spi-instance to check
+ */
+static inline u8 spi_driver_is_enabled(RP2040_SPI_REG* p_spi) {
+    return p_spi->SSPCR1 & SPI_DRIVER_SSPCR1_ENABLE;
 }
 
 // --------------------------------------------------------------------------------
 
 /**
  * @brief Configures the given spi instance depending on the given configuration
+ * THis function will disable the spi-instance befor it will be configured.
+ * This function does not enable the spi-instance. You need to do it by yourself.
  * 
  * @param p_spi pointer to the spi instance to be configured 
  * @param p_cfg configuration to be used to configure the spi instance
@@ -350,7 +373,7 @@ static void spi_driver_configure(
     p_spi->SSPCPSR = new_sspcpsr;
 
     // Setting this register will also enable the SPI peripheral
-    u32 new_sspcr1 = SPI_DRIVER_SSPCR1_ENABLE;
+    u32 new_sspcr1 = 0; //SPI_DRIVER_SSPCR1_ENABLE;
 
     if (p_cfg->module.spi.is_master == COM_DRIVER_IS_MASTER) {
         DEBUG_PASS("spi_driver_configure() - MASTER");
@@ -388,24 +411,27 @@ static inline u8 spi_driver_add_bytes(
     DEBUG_TRACE_N(num_bytes, p_buffer_from, "spi_driver_add_bytes()");
 
     u16 bytes_written = 0;
-    
-    while (spi_driver_is_ready_for_tx(p_spi) != 0) {
 
-        p_spi->SSPDR = p_buffer_from[bytes_written];
-        bytes_written += 1;
+    if (spi_driver_is_enabled(p_spi)) {
+        while (spi_driver_is_ready_for_tx(p_spi) != 0) {
 
-        #ifdef UNITTEST_SET_FIFO_DATA_CALLBACK
-        {
-            UNITTEST_SET_FIFO_DATA_CALLBACK
-        }
-        #endif
+            p_spi->SSPDR = p_buffer_from[bytes_written];
+            bytes_written += 1;
 
-        if (bytes_written == num_bytes) {
-            break;
+            #ifdef UNITTEST_SET_FIFO_DATA_CALLBACK
+            {
+                UNITTEST_SET_FIFO_DATA_CALLBACK
+            }
+            #endif
+
+            if (bytes_written == num_bytes) {
+                break;
+            }
         }
     }
 
     DEBUG_TRACE_word(bytes_written, "spi_driver_add_bytes() - NUM-BYTES HW-FIFO:");
+    DEBUG_CODE_BLOCK( u16 bytes_hw_fifo = p_msg_buffer->bytes_available(); )
 
     u16 bytes_left = num_bytes - bytes_written;
     if (bytes_left) {
@@ -414,7 +440,59 @@ static inline u8 spi_driver_add_bytes(
         p_msg_buffer->stop_write();
     }
 
+    DEBUG_CODE_BLOCK( bytes_hw_fifo = p_msg_buffer->bytes_available() - bytes_hw_fifo; )
+    DEBUG_TRACE_word(bytes_hw_fifo, "spi_driver_add_bytes() - NUM-BYTES SW-FIFO:");
+
     return bytes_written;
+}
+
+/**
+ * @brief Copies as much as possible bytes from the given sw-buffer
+ * to the hw-fifo of the given spi-instance.
+ * This function checks if the spi-instance is enabled.
+ * 
+ * @param p_spi spi-instance where to copy into
+ * @param p_msg_buffer sw-buffer where to read the data from
+ */
+void spi_driver_copy_to_hw_fifo(
+    RP2040_SPI_REG* p_spi,
+    const LOCAL_MSG_BUFFER_CLASS* p_msg_buffer
+) {
+
+    if (spi_driver_is_enabled(p_spi) == 0) {
+        DEBUG_PASS("spi_driver_copy_to_hw_fifo() - INSTANCE NOT ENABLED");
+        return;
+    }
+
+    DEBUG_CODE_BLOCK(u16 byte_counter = 0;)
+    DEBUG_TRACE_word(
+        p_msg_buffer->bytes_available(),
+        "spi_driver_copy_to_hw_fifo() - NUM BYTES TO TRANSMIT:"
+    );
+
+    p_msg_buffer->start_read();
+
+    while (p_msg_buffer->bytes_available()) {
+        if (spi_driver_is_ready_for_tx(p_spi) == 0) {
+            break;
+        }
+
+        p_spi->SSPDR = p_msg_buffer->get_byte();
+
+        #ifdef UNITTEST_SET_FIFO_DATA_CALLBACK
+        {
+            UNITTEST_SET_FIFO_DATA_CALLBACK
+        }
+        #endif
+
+        DEBUG_CODE_BLOCK(byte_counter += 1;)
+    }
+
+    p_msg_buffer->stop_read();
+
+    DEBUG_TRACE_word(byte_counter,
+        "spi_driver_copy_to_hw_fifo() - NUM BYTES COPIED:"
+    );
 }
 
 // --------------------------------------------------------------------------------
@@ -496,7 +574,7 @@ u8 spi0_driver_is_ready_for_rx(void) {
  * @see frmwrk/spi0_driver.h#spi0_driver_start_rx
  */
 void spi0_driver_start_rx(u16 num_of_rx_bytes) {
-    
+
 }
 
 /**
@@ -517,7 +595,7 @@ void spi0_driver_stop_rx(void) {
  * @see frmwrk/spi0_driver.h#spi0_driver_start_tx
  */
 void spi0_driver_start_tx(void) {
-    
+    spi_driver_enable(get_spi0_reg());
 }
 
 /**
@@ -575,7 +653,12 @@ void spi0_driver_mutex_release(u8 m_id) {
  * @see spi_driver_rp2040.c#spi0_irq_callback
  */
 static void spi0_irq_callback(void){
-
+    DEBUG_PASS("spi0_irq_callback()");
+    
+    spi_driver_copy_to_hw_fifo(
+        get_spi0_reg(),
+        SPI0_TX_BUFFER_get_class()
+    );
 }
 
 // --------------------------------------------------------------------------------
