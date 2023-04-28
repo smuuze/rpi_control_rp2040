@@ -242,7 +242,7 @@ void* ut_get_RP2040_UART0_REG_BASE_ADDRESS(void) {
     return (void*)&ut_uart0_reg;
 }
 
-extern void* ut_get_RP2040_UART1_REG_BASE_ADDRESS(void) {
+void* ut_get_RP2040_UART1_REG_BASE_ADDRESS(void) {
     counter_GET_UART1_REG += 1;
     return (void*)&ut_uart1_reg;
 }

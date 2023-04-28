@@ -13,6 +13,7 @@ source_dir_list=(
     gpio_driver_rp2040
     irq_interface_rp2040
     uart_driver_rp2040
+    spi_driver_rp2040
 )
 
 for i in "${!source_dir_list[@]}"; do

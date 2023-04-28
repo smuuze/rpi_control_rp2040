@@ -62,6 +62,7 @@ UT_ACTIVATE()
 #define TEST_CASE_ID_ADD_BYTES_TO_FIFO_01               2
 #define TEST_CASE_ID_ADD_BYTES_TO_FIFO_02               3
 #define TEST_CASE_ID_TX_BYTES_FROM_FIFO                 4
+#define TEST_CASE_ID_RX_10_BYTES                        5
 
 // --------------------------------------------------------------------------------
 
@@ -583,8 +584,8 @@ static void TEST_CASE_add_bytes_to_fifo_01(void) {
             0x11, 0x22,0x33,0x44
         };
 
-         // transmit fifo is not full
-        ut_spi0_reg.SSPCPSR |= 0x00000002;
+        ut_spi0_reg.SSPCPSR |= 0x00000002; // transmit fifo is not full
+        ut_spi0_reg.SSPCR1 |= 0x00000002;  // spi is enalbed
 
         spi0_driver_start_tx();
 
@@ -597,7 +598,7 @@ static void TEST_CASE_add_bytes_to_fifo_01(void) {
 
         UT_CHECK_IS_EQUAL(counter_RESET_RP2040, 0);
 
-        UT_CHECK_IS_EQUAL(counter_GET_SPI0_REG, 2); // start-tx and set-N-bytes
+        UT_CHECK_IS_EQUAL(counter_GET_SPI0_REG, 1); // start-tx and set-N-bytes
         UT_CHECK_IS_EQUAL(counter_GET_SPI1_REG, 0);
         
         UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPCPSR, 0x00000002); // fifo is not full
@@ -664,8 +665,8 @@ static void TEST_CASE_add_bytes_to_fifo_02(void) {
             0x06, 0x07, 0x08, 0x09, 0x0A
         };
 
-         // transmit fifo is not full
-        ut_spi0_reg.SSPCPSR |= 0x00000002;
+        ut_spi0_reg.SSPCPSR |= 0x00000002; // transmit fifo is not full
+        ut_spi0_reg.SSPCR1  |= 0x00000002; // spi is enalbed
 
         spi0_driver_start_tx();
         u16 num_bytes_written = spi0_driver_set_N_bytes(
@@ -677,7 +678,7 @@ static void TEST_CASE_add_bytes_to_fifo_02(void) {
 
         UT_CHECK_IS_EQUAL(counter_RESET_RP2040, 0);
 
-        UT_CHECK_IS_EQUAL(counter_GET_SPI0_REG, 2); // start-tx / set-N-bytes
+        UT_CHECK_IS_EQUAL(counter_GET_SPI0_REG, 1); // set-N-bytes
         UT_CHECK_IS_EQUAL(counter_GET_SPI1_REG, 0);
         
         UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPCPSR, 0); // fifo is not full
@@ -744,6 +745,79 @@ static void TEST_CASE_tx_bytes_from_fifo(void) {
 
          // transmit fifo is not full
         ut_spi0_reg.SSPCPSR |= 0x00000002;
+
+        IRQ_18_Handler();
+
+        UT_CHECK_IS_EQUAL(counter_RESET_RP2040, 0);
+
+        UT_CHECK_IS_EQUAL(counter_GET_SPI0_REG, 1);
+        UT_CHECK_IS_EQUAL(counter_GET_SPI1_REG, 0);
+        
+        UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPCPSR, 2); // fifo is not full
+        UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPCR0, 0);
+        UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPCR1, 2); // spi is enabled
+        UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPDMACR, 0);
+        UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPDR, 0);
+        UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPICR, 0);
+        UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPIMSC, 0);
+        UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPMIS, 0);
+        UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPRIS, 0);
+        UT_CHECK_IS_EQUAL(ut_spi0_reg.SSPSR, 0);
+        
+        UT_CHECK_IS_EQUAL(ut_spi1_reg.SSPCPSR, 0);
+        UT_CHECK_IS_EQUAL(ut_spi1_reg.SSPCR0, 0);
+        UT_CHECK_IS_EQUAL(ut_spi1_reg.SSPCR1, 0);
+        UT_CHECK_IS_EQUAL(ut_spi1_reg.SSPDMACR, 0);
+        UT_CHECK_IS_EQUAL(ut_spi1_reg.SSPDR, 0);
+        UT_CHECK_IS_EQUAL(ut_spi1_reg.SSPICR, 0);
+        UT_CHECK_IS_EQUAL(ut_spi1_reg.SSPIMSC, 0);
+        UT_CHECK_IS_EQUAL(ut_spi1_reg.SSPMIS, 0);
+        UT_CHECK_IS_EQUAL(ut_spi1_reg.SSPRIS, 0);
+        UT_CHECK_IS_EQUAL(ut_spi1_reg.SSPSR, 0);
+
+        UT_CHECK_IS_EQUAL(counter_ENABLE_IRQ,      0);
+        UT_CHECK_IS_EQUAL(counter_ENABLE_IRQ_SPI0, 0);
+        UT_CHECK_IS_EQUAL(counter_ENABLE_IRQ_SPI1, 0);
+
+        UT_CHECK_IS_EQUAL(counter_ADD_IRQ_HANDLER,         0);
+        UT_CHECK_IS_EQUAL(counter_ADD_IRQ_HANDLER_SPI0,    0);
+        UT_CHECK_IS_EQUAL(counter_ADD_IRQ_HANDLER_SPI1,    0);
+
+        UT_CHECK_IS_EQUAL(counter_ENABLE_IRQ_HANDLER,      0);
+        UT_CHECK_IS_EQUAL(counter_ENABLE_IRQ_HANDLER_SPI0, 0);
+        UT_CHECK_IS_EQUAL(counter_ENABLE_IRQ_HANDLER_SPI1, 0);
+
+        UT_CHECK_IS_EQUAL(counter_SET_FIFO_DATA, 5); // 5 bytes written
+
+        UT_CHECK_IS_EQUAL(spi_tx_fifo_bufer[0], 0x06);
+        UT_CHECK_IS_EQUAL(spi_tx_fifo_bufer[1], 0x07);
+        UT_CHECK_IS_EQUAL(spi_tx_fifo_bufer[2], 0x08);
+        UT_CHECK_IS_EQUAL(spi_tx_fifo_bufer[3], 0x09);
+        UT_CHECK_IS_EQUAL(spi_tx_fifo_bufer[4], 0x0A);
+    }
+    UT_END_TEST_CASE()
+}
+
+// --------------------------------------------------------------------------------
+
+/**
+ * @brief Expectations:
+ * Transmits the 5 bytes of the sw-buffer that have been added
+ * in testcase TEST_CASE_add_bytes_to_fifo_02()
+ */
+static void TEST_CASE_rx_10_bytes(void) {
+
+    UT_START_TEST_CASE("RX 10 bytes")
+    {
+        UT_SET_TEST_CASE_ID(TEST_CASE_ID_RX_10_BYTES);
+        unittest_reset_counter();
+
+        // we need to "enable" the spi
+        ut_spi0_reg.SSPCR1 |= 0x00000002;
+
+         // transmit fifo is not full
+        ut_spi0_reg.SSPCPSR |= 0x00000002;
+        spi0_driver_start_rx(TRX_DRIVER_INTERFACE_UNLIMITED_RX_LENGTH);
 
         IRQ_18_Handler();
 

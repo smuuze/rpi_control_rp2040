@@ -35,8 +35,8 @@ endif
 #-----------------------------------------------------------------------------
 
 ifneq '' '$(findstring SPI0,$(DRIVER_MODULE_CFG))'
-	#DEFS += -D HAS_DRIVER_SPI0=1
-	#CSRCS += $(SOC_PATH)/src/driver/spi_driver_rp2040.c
+	DEFS += -D HAS_DRIVER_SPI0=1
+	CSRCS += $(SOC_PATH)/src/driver/spi_driver_rp2040.c
 endif
 
 #-----------------------------------------------------------------------------
